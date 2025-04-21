@@ -5,17 +5,22 @@
 #include <memory>
 #include <vector>
 #include <ctime>
+#include <iostream>
+#include <mutex>
+
+extern std::mutex coutMutex;
 
 namespace StockTradingSystem {
 	enum OrderType { BUY, SELL };
 	class Order {
 		public:
-			Order(int, double, int);
+			Order(int, double, int, const std::string&);
 			virtual ~Order();
 			virtual std::string getOrderType() const = 0;
 			int getTraider_id() const;
 			double getPrice() const;
 			int getQuantity() const;  
+			std::string getStockName() const; // New method
 			std::time_t getTimestamp() const;
 			void reduceQuantity(int);
 			OrderType getOrdertype() const;
@@ -23,6 +28,7 @@ namespace StockTradingSystem {
 		private:
 			int traider_id;
 			double price;
+			std::string stockName; // New field
 			int quantity;
 			std::time_t timestamp;
 			OrderType ordertype;
@@ -30,30 +36,30 @@ namespace StockTradingSystem {
 
 	class MarketOrder : public Order  {
 		public:
-			MarketOrder(int trader_id, double price, int quantity) : Order(trader_id, price, quantity) {}
+			MarketOrder(int trader_id, double price, int quantity, const std::string& stockName) : Order(trader_id, price, quantity, stockName) {}
 			std::string getOrderType() const override;
 	};
 
 	class LimitOrder : public Order  {
 		public:
-			LimitOrder(int trader_id, double price, int quantity) : Order(trader_id, price, quantity) {}
+			LimitOrder(int trader_id, double price, int quantity, const std::string& stockName) : Order(trader_id, price, quantity, stockName) {}
 			std::string getOrderType() const override;
 	};
 
 	class OrderFactory {
 		public:
-			virtual std::unique_ptr<Order> createOrder(int, double, int) = 0;
+			virtual std::unique_ptr<Order> createOrder(int, double, int, const std::string&) = 0;
 			virtual ~OrderFactory();
 	};
 
 	class MarketOrderFactory : public OrderFactory {
 		public:
-			std::unique_ptr<Order> createOrder(int, double, int) override;
+			std::unique_ptr<Order> createOrder(int, double, int, const std::string&) override;
 	};
 
 	class LimitOrderFactory : public OrderFactory {
 		public:
-			std::unique_ptr<Order> createOrder(int, double, int) override;
+			std::unique_ptr<Order> createOrder(int, double, int, const std::string&) override;
 	};
 
 	class OrderMatchingStrategy {

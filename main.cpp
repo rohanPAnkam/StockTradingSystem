@@ -1,52 +1,208 @@
-#include "include/orderBook.h" 
+// #include "include/orderBook.h"
+// #include "include/trader.h"
+// #include <iostream>
+// #include <vector>
+// #include <thread>
+// #include <mutex>
+// #include <numeric>
+
+// using namespace StockTradingSystem;
+
+// void traderFunction(Trader& trader, OrderBook& orderBook, OrderFactory* factory) {
+//     std::vector<Stock> stocks = {
+//         Stock(145.50, "AAPL"), Stock(420.75, "TSLA"), Stock(280.20, "MSFT")
+//     };
+//     for (const auto& stock : stocks) {
+//         trader.addStock(stock);
+//     }
+//     int quantity = 25;
+
+//     // Calculate average price for mean-reversion strategy
+//     double totalPrice = std::accumulate(stocks.begin(), stocks.end(), 0.0,
+//         [](double sum, const Stock& stock) { return sum + stock.getPrice(); });
+//     double avgPrice = totalPrice / stocks.size();
+
+//     // Create baseline orders for all stocks using mean-reversion
+//     for (const auto& stock : stocks) {
+//         if (stock.getPrice() < avgPrice) {
+//             trader.buy(stock, quantity);
+//         } else {
+//             trader.sell(stock, quantity);
+//         }
+//     }
+
+//     // Add threshold-based trading
+//     trader.trade(200, 400, 12, 13);
+// }
+
+// int main() {
+//     OrderBook orderBook;
+//     orderBook.setStrategy(std::make_unique<PriceTimeOrderMatchingStrategy>());
+
+//     MarketOrderFactory factory;
+//     std::vector<std::unique_ptr<Trader>> traders; // Store unique_ptr<Trader>
+//     std::vector<std::thread> traderThreads;
+//     int numTraders = 5;
+//     for (int i = 0; i < numTraders; ++i) {
+//         traders.push_back(std::make_unique<Trader>("Trader " + std::to_string(i + 1), 
+//                                                   std::vector<Stock>{}, &factory, &orderBook));
+//         traderThreads.emplace_back(traderFunction, std::ref(*traders.back()), 
+//                                   std::ref(orderBook), &factory);
+//     }
+
+//     for (auto& thread : traderThreads) {
+//         thread.join();
+//     }
+
+//     orderBook.matchOrders();
+//     orderBook.printOrderBook();
+
+//     return 0;
+// }
+
+
+// #include "include/orderBook.h"
+// #include "include/trader.h"
+// #include <iostream>
+// #include <vector>
+// #include <thread>
+// #include <mutex>
+// #include <numeric>
+
+// using namespace StockTradingSystem;
+
+// void traderFunction(Trader& trader, OrderBook& orderBook, OrderFactory* factory) {
+//     std::vector<Stock> stocks = {
+//         Stock(145.50, "AAPL"), Stock(420.75, "TSLA"), Stock(280.20, "MSFT")
+//     };
+//     for (const auto& stock : stocks) {
+//         trader.addStock(stock);
+//     }
+//     int quantity = 25;
+
+//     // Calculate average price for mean-reversion strategy
+//     double totalPrice = std::accumulate(stocks.begin(), stocks.end(), 0.0,
+//         [](double sum, const Stock& stock) { return sum + stock.getPrice(); });
+//     double avgPrice = totalPrice / stocks.size();
+//     std::cout << "Trader " << trader.getID() << " average price: " << avgPrice << "\n";
+
+//     // Create baseline orders for all stocks using mean-reversion
+//     for (const auto& stock : stocks) {
+//         if (stock.getPrice() < avgPrice) {
+//             std::cout << "Trader " << trader.getID() << " creating BUY order for " 
+//                       << stock.getName() << " at " << stock.getPrice() << "\n";
+//             trader.buy(stock, quantity);
+//         } else {
+//             std::cout << "Trader " << trader.getID() << " creating SELL order for " 
+//                       << stock.getName() << " at " << stock.getPrice() << "\n";
+//             trader.sell(stock, quantity);
+//         }
+//     }
+
+//     // Add threshold-based trading
+//     trader.trade(200, 400, 12, 13);
+// }
+
+// int main() {
+//     OrderBook orderBook;
+//     orderBook.setStrategy(std::make_unique<PriceTimeOrderMatchingStrategy>());
+
+//     MarketOrderFactory factory;
+//     std::vector<std::unique_ptr<Trader>> traders;
+//     std::vector<std::thread> traderThreads;
+//     int numTraders = 5;
+//     for (int i = 0; i < numTraders; ++i) {
+//         traders.push_back(std::make_unique<Trader>("Trader " + std::to_string(i + 1), 
+//                                                   std::vector<Stock>{}, &factory, &orderBook));
+//         traderThreads.emplace_back(traderFunction, std::ref(*traders.back()), 
+//                                   std::ref(orderBook), &factory);
+//     }
+
+//     for (auto& thread : traderThreads) {
+//         thread.join();
+//     }
+
+//     orderBook.matchOrders();
+//     orderBook.printOrderBook();
+
+//     return 0;
+// }
+
+
+
+#include "include/orderBook.h"
 #include "include/trader.h"
-//https://github.com/NalbandyanElmira/StockTradingSystem/tree/main
 #include <iostream>
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <numeric>
 
 using namespace StockTradingSystem;
 
-// Define a trader function to simulate traders placing orders
-void traderFunction(Trader& trader, OrderBook& orderBook) {
-    Stock someStock(145, "a");
-    Stock anotherStock(154, "b");
-    trader.addStock(someStock);
-    trader.addStock(anotherStock);
-    int quantity = 25;
-    
-    // Place buy and sell orders
-    std::shared_ptr<Order> buyOrder = std::make_shared<MarketOrder>(trader.getID(), someStock.getPrice(), quantity);
-    buyOrder->setOrderType(OrderType::BUY);
-    std::shared_ptr<Order> sellOrder = std::make_shared<MarketOrder>(trader.getID(), anotherStock.getPrice(), quantity);
-    sellOrder->setOrderType(OrderType::SELL);
-    
-    trader.trade(150, 160, 12, 13);
+std::mutex coutMutex; // Global mutex for synchronized logging
 
-    // Add orders to the order book
-    orderBook.addOrder(buyOrder);
-    orderBook.addOrder(sellOrder);
+void traderFunction(Trader& trader, OrderBook& orderBook, OrderFactory* factory) {
+    std::vector<Stock> stocks = {
+        Stock(145.50, "AAPL"), Stock(420.75, "TSLA"), Stock(280.20, "MSFT")
+    };
+    for (const auto& stock : stocks) {
+        trader.addStock(stock);
+    }
+    int quantity = 25;
+
+    // Calculate average price for mean-reversion strategy
+    double totalPrice = std::accumulate(stocks.begin(), stocks.end(), 0.0,
+        [](double sum, const Stock& stock) { return sum + stock.getPrice(); });
+    double avgPrice = totalPrice / stocks.size();
+    {
+        std::lock_guard<std::mutex> lock(::coutMutex);
+        std::cout << "Trader " << trader.getID() << " average price: " << avgPrice << "\n";
+    }
+
+    // Create baseline orders for all stocks using mean-reversion
+    for (const auto& stock : stocks) {
+        if (stock.getPrice() < avgPrice) {
+            {
+                std::lock_guard<std::mutex> lock(::coutMutex);
+                std::cout << "Trader " << trader.getID() << " creating BUY order for " 
+                          << stock.getName() << " at " << stock.getPrice() << "\n";
+            }
+            trader.buy(stock, quantity);
+        } else {
+            {
+                std::lock_guard<std::mutex> lock(::coutMutex);
+                std::cout << "Trader " << trader.getID() << " creating SELL order for " 
+                          << stock.getName() << " at " << stock.getPrice() << "\n";
+            }
+            trader.sell(stock, quantity);
+        }
+    }
+
+    // Add threshold-based trading
+    trader.trade(500, 400, 12, 13); // Increased buy threshold to 500 for TSLA buy orders
 }
 
 int main() {
-    // Create an order book
     OrderBook orderBook;
+    orderBook.setStrategy(std::make_unique<PriceTimeOrderMatchingStrategy>());
 
-    // Create and start multiple trader threads
+    MarketOrderFactory factory;
+    std::vector<std::unique_ptr<Trader>> traders;
     std::vector<std::thread> traderThreads;
-    int numTraders = 3;
+    int numTraders = 5;
     for (int i = 0; i < numTraders; ++i) {
-        Trader trader("Trader " + std::to_string(i + 1));
-        traderThreads.emplace_back(traderFunction, std::ref(trader), std::ref(orderBook));
+        traders.push_back(std::make_unique<Trader>("Trader " + std::to_string(i + 1), 
+                                                  std::vector<Stock>{}, &factory, &orderBook));
+        traderThreads.emplace_back(traderFunction, std::ref(*traders.back()), 
+                                  std::ref(orderBook), &factory);
     }
 
-    // Join trader threads
     for (auto& thread : traderThreads) {
         thread.join();
     }
 
-    // Print the order book after all trading is done
+    orderBook.matchOrders();
     orderBook.printOrderBook();
 
     return 0;
