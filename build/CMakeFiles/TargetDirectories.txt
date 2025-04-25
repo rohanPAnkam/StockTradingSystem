@@ -1,3 +1,0 @@
-/Users/rohanankam/Desktop/c++/Projects/StockTrading/build/CMakeFiles/my_app.dir
-/Users/rohanankam/Desktop/c++/Projects/StockTrading/build/CMakeFiles/edit_cache.dir
-/Users/rohanankam/Desktop/c++/Projects/StockTrading/build/CMakeFiles/rebuild_cache.dir
