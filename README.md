@@ -1,15 +1,20 @@
-The Stock Trading System project is a C++ application designed to simulate a stock trading environment. The system supports multiple traders who can buy and sell stocks, and it manages an order book for processing transactions. Here are its key components:
+## Stock Trading Simulator
+A multithreaded C++ application simulating a stock exchange, featuring automated order creation and matching using advanced trading strategies.
+- Overview:  This project implements a stock trading system where traders create buy and sell orders based on predefined strategies. Orders are managed in an order book and matched using the Price-Time Matching Strategy, ensuring efficient and fair trade execution. The system supports concurrent trading operations, making it scalable and robust.
 
-•	Trader : Represents a trader who places buy or sell orders.
+### Features
 
-•	Stock : Represents a stock with a price and name.
+1. Automated Trading Strategies:
+   1. Mean-Reversion: Traders create orders based on stock prices relative to their average, buying low and selling high.
+   2. Threshold-Based: Orders are generated based on price thresholds for buying or selling.
+2. Price-Time Matching Strategy: Matches buy and sell orders prioritizing price and order timestamp.
+3. Multithreaded Architecture: Supports concurrent trader operations with thread-safe order book management.
+4. Duplicate Order Prevention: Ensures unique orders using a custom comparator.
+5. Synchronized Logging: Thread-safe console output for clear order tracking.
 
-•	Order : A base class for all types of orders.
+### Prerequisites
 
-•	MarketOrder: Executes a buy/sell order at the current market price.
-
-•	LimitOrder: Executes a buy/sell order at a specified price.
-
-•	OrderFactory: Creates different types of orders.
-
-•	OrderMatchingStrategy: Implements strategies for matching buy and
+- C++17 or higher
+- CMake 3.10 or higher
+- A C++ compiler (e.g., g++, clang++)
+- POSIX threads support (pthread)
